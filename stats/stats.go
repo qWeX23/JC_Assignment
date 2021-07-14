@@ -41,15 +41,12 @@ func printStats(s *Stats) {
 //todo err
 func (s *Stats) GetStats() string {
 	jsonString, _ := json.Marshal(s.getSampleAverageSlice())
-
 	return string(jsonString)
-
 }
 
-//todo return error and threadsafey
+//todo return error
 func (s *Stats) getSampleAverageSlice() []SampleAverage {
 	AveragesSlice := make([]SampleAverage, 0)
-
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for action, average := range s.Averages {
@@ -58,22 +55,14 @@ func (s *Stats) getSampleAverageSlice() []SampleAverage {
 			Average: average.TotalTime / average.NumSamples,
 		}
 		AveragesSlice = append(AveragesSlice, sampleAverage)
-
 	}
 	return AveragesSlice
 }
 
-func (s *Stats) AddAction(sampleString string) {
-	var sample Sample
-	//todo add some validation and error checking
-	err := json.Unmarshal([]byte(sampleString), &sample)
-
-	if err != nil {
-		panic(err)
-	}
-
+func (s *Stats) addAction(sample Sample) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	if s.Averages[sample.Action] == nil {
 		s.Averages[sample.Action] = &Average{
 			NumSamples: 1,
@@ -83,4 +72,14 @@ func (s *Stats) AddAction(sampleString string) {
 		s.Averages[sample.Action].TotalTime += sample.Time
 		s.Averages[sample.Action].NumSamples += 1
 	}
+}
+
+func (s *Stats) AddAction(sampleString string) {
+	var sample Sample
+	//todo add some validation
+	err := json.Unmarshal([]byte(sampleString), &sample)
+	if err != nil {
+		panic(err)
+	}
+	s.addAction(sample)
 }
