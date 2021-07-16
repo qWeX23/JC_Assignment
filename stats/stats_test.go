@@ -137,7 +137,7 @@ func TestAddAction_Concurrent(t *testing.T) {
 	}
 }
 
-//test some edge cases
+//test some edge cases, confirm error is thrown after bad json is passed
 func TestAddAction_BadJson(t *testing.T) {
 	badJson := "{wd;;;]}"
 	st := NewStats()
@@ -168,5 +168,49 @@ func TestAddAction_IntOverflow(t *testing.T) {
 	}
 	if err2 == nil {
 		t.Fatalf("TotalTime for jump exceeded maxuint64")
+	}
+}
+
+func BenchmarkGetStatsSmall(b *testing.B) {
+
+	var tests = []string{
+		"jump",
+		"run",
+		"walk",
+		"swim",
+		"sprint",
+		"kick",
+	}
+
+	st := NewStats()
+
+	for _, t := range tests {
+		sample := Sample{
+			Action: t,
+			Time:   math.MaxUint64,
+		}
+		st.addAction(sample)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.GetStats()
+	}
+
+}
+
+func BenchmarkGetStatsMega(b *testing.B) {
+	numActions := 100000
+	st := NewStats()
+	for i := 0; i < numActions; i++ {
+		actionName := fmt.Sprintf("Action%d", i)
+		sample := Sample{
+			Action: actionName,
+			Time:   math.MaxUint64,
+		}
+		st.addAction(sample)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.GetStats()
 	}
 }
