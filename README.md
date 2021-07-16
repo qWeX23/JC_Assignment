@@ -40,7 +40,9 @@ will output similar to
 ## Downloading and Running the Code
 
 You should have the following installed 
+
 [go](https://golang.org/dl/) Developed and tested on `go version go1.16.5 windows/amd64` but there is not reason to believe at time of writing that go 1.16.X for any OS would be incompatible, However, they are not tested. 
+
 [git](https://git-scm.com/downloads) 
 
 Open a terminal or cmd in the desired directory and run the following commands
