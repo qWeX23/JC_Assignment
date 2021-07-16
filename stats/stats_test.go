@@ -2,6 +2,7 @@ package stats
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"testing"
 )
@@ -90,18 +91,25 @@ func TestAddAction_Sample(t *testing.T) {
 func TestAddAction_Concurrent(t *testing.T) {
 	st := NewStats()
 
-	for i := 0; i < 1000; i++ {
-		go func(st *Stats) {
-			call1 := Sample{
-				Action: "jump",
-				Time:   uint64(i),
+	for i := 0; i < 10; i++ {
+
+		call1 := Sample{
+			Action: "jump",
+			Time:   uint64(i),
+		}
+		jsonString, _ := json.Marshal(call1)
+		t.Run(fmt.Sprintf("Concurrent Test %d", i), func(t *testing.T) {
+			t.Parallel()
+			addErr := st.AddAction(string(jsonString))
+			_, geterr := st.GetStats()
+			if addErr != nil {
+				t.Error(addErr.Error())
 			}
-			jsonString, _ := json.Marshal(call1)
-			go st.AddAction(string(jsonString))
-			go st.AddAction(string(jsonString))
-			go st.GetStats()
-		}(&st)
-		go st.GetStats()
+			if geterr != nil {
+				t.Error(geterr.Error())
+			}
+
+		})
 	}
 }
 
