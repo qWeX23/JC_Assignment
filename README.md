@@ -110,4 +110,36 @@ A mutex was chosen for this implementation to ensure thread safety. This allowed
 ---
 ## Performance
 
-TODO add Benchmark unit test for add and get
+The Benchmark tests can be run from the stats directory using the command: 
+
+`go test -bench=$.`
+
+Benchmarking test provided key insigt into the performance of the module. The Results showed that there was an increased compute time based on the number of unique actions in the core map. The design decison was made to use a hashmap with key of action (string) and value of the average values. The thought at the time was that there would be quick inserts in the `AddActions()` call, and this would be advantageous for a hypothetical real world use case. The speed that the map could have provided would make up for the lengthier `GetStats()`, because hypothetically there would be more adds than gets. The Results of the test back up this hypothesis. 
+
+```
+ go test -bench=$. 
+goos: windows
+goarch: amd64
+pkg: github.com/qwex23/JC_Assignment/stats
+cpu: AMD Ryzen 9 3900X 12-Core Processor
+BenchmarkGetStatsSmall-24                         733446              1489 ns/op
+BenchmarkGetStatsMega-24                              39          30190587 ns/op
+BenchmarkGetStatsSmall_direct-24                 3347928               357.2 ns/op
+BenchmarkGetStatsMega_direct-24                      100          13974519 ns/op
+BenchmarkAddActionMega-24                         799914              1632 ns/op
+BenchmarkAddActionSmall-24                        799999              1542 ns/op
+BenchmarkAddActionMega_direct-24                 2580138               448.3 ns/op
+BenchmarkAddActionSmall_direct-24                2927943               409.3 ns/op
+BenchmarkGetStats_direct_highvolume-24          12369030                97.23 ns/op
+BenchmarkGetStats_direct_lowvolume-24           12302934                96.90 ns/op
+BenchmarkAddActionMega_direct_highvolume-24     46109864                25.89 ns/op
+BenchmarkAddActionMega_direct_lowvolume-24      46153490                26.07 ns/op
+PASS
+ok      github.com/qwex23/JC_Assignment/stats   18.094s
+```
+
+The Benchmarks show that the performance of `GetStats()` is directly dependant on the numer of unique actions. (see GetStatsSmall vs. GetStatsMega)
+
+We can also see that the amount of samples of the same action name has no effect on the performance of either `AddAction()` or `GetStats()`. (see tests with _highvolume vs _lowvolume) 
+
+During development of the benchmarks, it is found that map lookup in go for string keys is at [best O(N log N )](https://stackoverflow.com/questions/29677670/what-is-the-big-o-performance-of-maps-in-golang) because of the preprocessing necessary. This could be the cause of the slightly larger processing time for the larger datasets. 

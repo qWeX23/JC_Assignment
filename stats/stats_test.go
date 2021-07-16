@@ -214,3 +214,244 @@ func BenchmarkGetStatsMega(b *testing.B) {
 		st.GetStats()
 	}
 }
+
+func BenchmarkGetStatsSmall_direct(b *testing.B) {
+
+	var tests = []string{
+		"jump",
+		"run",
+		"walk",
+		"swim",
+		"sprint",
+		"kick",
+	}
+
+	st := NewStats()
+
+	for _, t := range tests {
+		sample := Sample{
+			Action: t,
+			Time:   math.MaxUint64,
+		}
+		st.addAction(sample)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.getSampleAverageSlice()
+	}
+
+}
+
+func BenchmarkGetStatsMega_direct(b *testing.B) {
+	numActions := 100000
+	st := NewStats()
+	for i := 0; i < numActions; i++ {
+		actionName := fmt.Sprintf("Action%d", i)
+		sample := Sample{
+			Action: actionName,
+			Time:   math.MaxUint64,
+		}
+		st.addAction(sample)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.getSampleAverageSlice()
+	}
+}
+
+func BenchmarkAddActionMega(b *testing.B) {
+	numActions := 100000
+	st := NewStats()
+	actionsSlice := make([]string, numActions)
+	for i := 0; i < numActions; i++ {
+		actionName := fmt.Sprintf("Action%d", i)
+		sample := Sample{
+			Action: actionName,
+			Time:   math.MaxUint64,
+		}
+		var jsonString []byte
+		jsonString, _ = json.Marshal(sample)
+		actionsSlice[i] = string(jsonString)
+	}
+	for _, v := range actionsSlice {
+		st.AddAction(v)
+	}
+	actionName := "action"
+	sample := Sample{
+		Action: actionName,
+		Time:   math.MaxUint64,
+	}
+	var jsonString []byte
+	jsonString, _ = json.Marshal(sample)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+
+		st.AddAction(string(jsonString))
+	}
+}
+
+func BenchmarkAddActionSmall(b *testing.B) {
+	numActions := 10
+	st := NewStats()
+	actionsSlice := make([]string, numActions)
+	for i := 0; i < numActions; i++ {
+		actionName := fmt.Sprintf("Action%d", i)
+		sample := Sample{
+			Action: actionName,
+			Time:   math.MaxUint64,
+		}
+		var jsonString []byte
+		jsonString, _ = json.Marshal(sample)
+		actionsSlice[i] = string(jsonString)
+	}
+	for _, v := range actionsSlice {
+		st.AddAction(v)
+	}
+	actionName := "action"
+	sample := Sample{
+		Action: actionName,
+		Time:   math.MaxUint64,
+	}
+	var jsonString []byte
+	jsonString, _ = json.Marshal(sample)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+
+		st.AddAction(string(jsonString))
+	}
+}
+
+func BenchmarkAddActionMega_direct(b *testing.B) {
+	numActions := 100000
+	st := NewStats()
+	actionsSlice := make([]Sample, numActions)
+	for i := 0; i < numActions; i++ {
+		actionName := fmt.Sprintf("Action%d", i)
+		sample := Sample{
+			Action: actionName,
+			Time:   math.MaxUint64,
+		}
+		actionsSlice[i] = sample
+	}
+	for _, v := range actionsSlice {
+		st.addAction(v)
+	}
+	sample := Sample{
+		Action: "actionName",
+		Time:   math.MaxUint64,
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+
+		st.addAction(sample)
+	}
+}
+
+func BenchmarkAddActionSmall_direct(b *testing.B) {
+	numActions := 10
+	st := NewStats()
+	actionsSlice := make([]Sample, numActions)
+	for i := 0; i < numActions; i++ {
+		actionName := fmt.Sprintf("Action%d", i)
+		sample := Sample{
+			Action: actionName,
+			Time:   math.MaxUint64,
+		}
+		actionsSlice[i] = sample
+	}
+	for _, v := range actionsSlice {
+		st.addAction(v)
+	}
+	sample := Sample{
+		Action: "actionName",
+		Time:   math.MaxUint64,
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+
+		st.addAction(sample)
+	}
+}
+
+func BenchmarkGetStats_direct_highvolume(b *testing.B) {
+	numActions := 100000
+	st := NewStats()
+	actionName := "action"
+	for i := 0; i < numActions; i++ {
+		sample := Sample{
+			Action: actionName,
+			Time:   uint64(i),
+		}
+		st.addAction(sample)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.getSampleAverageSlice()
+	}
+}
+func BenchmarkGetStats_direct_lowvolume(b *testing.B) {
+	numActions := 10
+	st := NewStats()
+	actionName := "action"
+	for i := 0; i < numActions; i++ {
+		sample := Sample{
+			Action: actionName,
+			Time:   uint64(i),
+		}
+		st.addAction(sample)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.getSampleAverageSlice()
+	}
+}
+
+func BenchmarkAddActionMega_direct_highvolume(b *testing.B) {
+	numActions := 100000
+	st := NewStats()
+	actionsSlice := make([]Sample, numActions)
+	actionName := "action"
+	for i := 0; i < numActions; i++ {
+		sample := Sample{
+			Action: actionName,
+			Time:   uint64(i),
+		}
+		actionsSlice[i] = sample
+	}
+	for _, v := range actionsSlice {
+		st.addAction(v)
+	}
+	sample := Sample{
+		Action: actionName,
+		Time:   uint64(1),
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.addAction(sample)
+	}
+}
+
+func BenchmarkAddActionMega_direct_lowvolume(b *testing.B) {
+	numActions := 10
+	st := NewStats()
+	actionsSlice := make([]Sample, numActions)
+	actionName := "action"
+	for i := 0; i < numActions; i++ {
+		sample := Sample{
+			Action: actionName,
+			Time:   uint64(i),
+		}
+		actionsSlice[i] = sample
+	}
+	for _, v := range actionsSlice {
+		st.addAction(v)
+	}
+	sample := Sample{
+		Action: actionName,
+		Time:   uint64(1),
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.addAction(sample)
+	}
+}
