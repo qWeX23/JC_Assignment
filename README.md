@@ -1,12 +1,19 @@
 # JumpCloud Software Engineer Programming Assignment
 
-The stats module has the ability to track the average  time for a given action. It works by calculating a running average of the time of each action as they are added. 
+The stats module has the ability to track the average  time for a given action. It works by calculating a running average of the time of each action as they are added. [Specification](https://github.com/qWeX23/JC_Assignment/blob/main/Software%20Engineer%20-%20Backend%20Assignment.pdf)
 
-- --
+---
 Usage:
 
-Go Snippet 
+Stats Hello World 
 ```
+package main
+
+import (
+	"github.com/qwex23/JC_Assignment/stats"
+)
+
+func main() {
     st := stats.NewStats()
 
 	call1 := "{\"action\":\"jump\", \"time\":100}"
@@ -22,20 +29,56 @@ Go Snippet
 		println("Bad news, we had an error!")
 	}
 	print(statsJson)
+}
 ```
 will output similar to 
+
 `[{"action":"jump","avg":150},{"action":"run","avg":75}]`
-- --
-- Using Module
+
+
+---
+## Downloading and Running the Code
+
+You should have the following installed 
+[go](https://golang.org/dl/) Developed and tested on `go version go1.16.5 windows/amd64` but there is not reason to believe at time of writing that go 1.16.X for any OS would be incompatible, However, they are not tested. 
+[git](https://git-scm.com/downloads) 
+
+Open a terminal or cmd in the desired directory and run the following commands
+
+`git clone https://github.com/qWeX23/JC_Assignment.git`
+
+`cd JC_assignment/stats`
+
+Compile the code 
+
+`go build`
+
+Testing the code
+
+`go test -v`
+
+To use the module standalone
+
+`cd ../main`
+
+Open main.go in the text editor and 
+
+---
+## Using the module
 
 `go get github.com/qwex23/JC_Assignment/stats`
-- Using Main? (CLI App?)
-- Compiling from source
-- Running Tests
 
-Design
+add the following import to your code 
+```
+import (
+	"github.com/qwex23/JC_Assignment/stats"
+)
+```
+---
 
-- Map Vs Slice 
+## Design
+
+### Map Vs Slice 
 
 This implementation uses a map with key of the given action and value of a struct that contains the total number of actions and the running total of time units. From this we can calculate the running average by dividing the two values. 
 
@@ -45,13 +88,13 @@ An alternative implementation could use a slice. This would hold each action inp
 
  A map with key of action and value of slice where the slice is each action input could be used to reduce the lookup time, but have little effect on the memory usage. 
 
-- Mutex for unsafe operations
+### Mutex for unsafe operations
 
 A mutex was chosen for this implementation to ensure thread safety. This allowed for simple implementation and guaranteed thread safety for the shared memory operations. An Alternative implementation could be to use a database engine, or to investigate more into thread safe data structures in golang
 
-- --
+---
 
-Assumptions
+## Assumptions
 
 - No other statsistics would be needed from the program
 - No persistance of input is necessary
@@ -62,5 +105,7 @@ Assumptions
 - TODO. MORE.
 
 
-- --
-Performance
+---
+## Performance
+
+TODO add Benchmark unit test for add and get
