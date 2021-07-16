@@ -19,24 +19,42 @@ func TestAddAction(t *testing.T) {
 	err2 := st.AddAction(call2)
 	err3 := st.AddAction(call3)
 	//Assert
-	if err1 != nil || err2 != nil || err3 != nil {
-		erMessage := ""
-		if err1 != nil {
-			erMessage += err1.Error()
-		}
-		if err2 != nil {
-			erMessage += err2.Error()
-		}
-		if err3 != nil {
-			erMessage += err3.Error()
-		}
-		t.Fatalf(erMessage)
+
+	if err1 != nil {
+		t.Error(err1.Error())
+	}
+	if err2 != nil {
+		t.Error(err2.Error())
+	}
+	if err3 != nil {
+		t.Error(err3.Error())
 	}
 
+	//since the ordering of the items is unimportant, we should marshal
+	//to ensure we are validating the values not the exact string.
+	want := "[{\"action\":\"jump\",\"avg\":150},{\"action\":\"run\",\"avg\":75}]"
+
+	wantStruct := make([]SampleAverage, 2)
+	json.Unmarshal([]byte(want), &wantStruct)
+
 	statsJson, err := st.GetStats()
-	if statsJson != "[{\"action\":\"jump\",\"avg\":150},{\"action\":\"run\",\"avg\":75}]" {
-		t.Fatal("Base Test Case failed" + err.Error())
+	if err != nil {
+		t.Errorf("error from get stats %s", err.Error())
 	}
+	haveStruct := make([]SampleAverage, 2)
+	json.Unmarshal([]byte(statsJson), &haveStruct)
+
+	//Terribly inneficient loop, but only for 4 passes
+	for _, w := range wantStruct {
+		for _, h := range haveStruct {
+			if w.Action == h.Action {
+				if w.Average != h.Average {
+					t.Errorf("action of %s has wrong average %d want %d", w.Action, h.Average, w.Average)
+				}
+			}
+		}
+	}
+
 }
 
 //test basic funcitonality from the core code
@@ -95,18 +113,24 @@ func TestAddAction_Concurrent(t *testing.T) {
 
 		call1 := Sample{
 			Action: "jump",
-			Time:   uint64(i),
+			Time:   10,
 		}
 		jsonString, _ := json.Marshal(call1)
 		t.Run(fmt.Sprintf("Concurrent Test %d", i), func(t *testing.T) {
 			t.Parallel()
 			addErr := st.AddAction(string(jsonString))
-			_, geterr := st.GetStats()
 			if addErr != nil {
 				t.Error(addErr.Error())
 			}
+			statsJson, geterr := st.GetStats()
 			if geterr != nil {
 				t.Error(geterr.Error())
+			}
+			haveStruct := make([]SampleAverage, 1)
+			json.Unmarshal([]byte(statsJson), &haveStruct)
+
+			if haveStruct[0].Average != 10 {
+				t.Fatalf("Concurrency error!")
 			}
 
 		})

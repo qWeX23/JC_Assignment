@@ -104,7 +104,7 @@ A mutex was chosen for this implementation to ensure thread safety. This allowed
 - The values passed for `time` will be relatively small in number of values or size of values. Because the program caluclates the total of all values per `action`, there is a possiblity of overflowing uint64 (18446744073709551615). Assuming the use case specified in the document, uint64 would have adequate headroom for the total of all specified values. The program was designed under that assumption. A mitigation for this would be to use the [cumulative moving average function](https://en.wikipedia.org/wiki/Moving_average). CMA uses the last value and the total number of values to calculate the new average. Implementing this would allow for max uint64 number of times with value that is valid uint64.
 - The `time` value cannot be negative
 - The average returned will be an integer approximation based on go's rounding rules
-- TODO. MORE.
+- The order of the action averages in the return of `GetStats()` is unimportant. Adding a sort before we Marshal the final slice would fix this at the cost of higher runtime complexity 
 
 
 ---
