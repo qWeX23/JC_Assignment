@@ -149,6 +149,7 @@ func TestAddAction_BadJson(t *testing.T) {
 	}
 }
 
+//verify we get an error when the numbers get too big
 func TestAddAction_IntOverflow(t *testing.T) {
 	st := NewStats()
 
@@ -171,26 +172,25 @@ func TestAddAction_IntOverflow(t *testing.T) {
 	}
 }
 
-func BenchmarkGetStatsSmall(b *testing.B) {
-
-	var tests = []string{
-		"jump",
-		"run",
-		"walk",
-		"swim",
-		"sprint",
-		"kick",
-	}
-
-	st := NewStats()
-
-	for _, t := range tests {
+//=====================Benchmark Tests====================//
+//helper to make new stats with numActions number of unique actions
+func makeStatsWithUniqueActions(numActions int) (st Stats) {
+	st = NewStats()
+	for i := 0; i < numActions; i++ {
+		actionName := fmt.Sprintf("Action%d", i)
 		sample := Sample{
-			Action: t,
+			Action: actionName,
 			Time:   math.MaxUint64,
 		}
 		st.addAction(sample)
 	}
+	return st
+}
+
+//get benchmarks from get stats with only 10 unique actions
+func BenchmarkGetStatsSmall(b *testing.B) {
+	numActions := 10
+	st := makeStatsWithUniqueActions(numActions)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.GetStats()
@@ -200,15 +200,7 @@ func BenchmarkGetStatsSmall(b *testing.B) {
 
 func BenchmarkGetStatsMega(b *testing.B) {
 	numActions := 100000
-	st := NewStats()
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		st.addAction(sample)
-	}
+	st := makeStatsWithUniqueActions(numActions)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.GetStats()
@@ -216,25 +208,7 @@ func BenchmarkGetStatsMega(b *testing.B) {
 }
 
 func BenchmarkGetStatsSmall_direct(b *testing.B) {
-
-	var tests = []string{
-		"jump",
-		"run",
-		"walk",
-		"swim",
-		"sprint",
-		"kick",
-	}
-
-	st := NewStats()
-
-	for _, t := range tests {
-		sample := Sample{
-			Action: t,
-			Time:   math.MaxUint64,
-		}
-		st.addAction(sample)
-	}
+	st := makeStatsWithUniqueActions(10)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.getSampleAverageSlice()
@@ -244,15 +218,7 @@ func BenchmarkGetStatsSmall_direct(b *testing.B) {
 
 func BenchmarkGetStatsMega_direct(b *testing.B) {
 	numActions := 100000
-	st := NewStats()
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		st.addAction(sample)
-	}
+	st := makeStatsWithUniqueActions(numActions)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.getSampleAverageSlice()
@@ -261,21 +227,7 @@ func BenchmarkGetStatsMega_direct(b *testing.B) {
 
 func BenchmarkAddActionMega(b *testing.B) {
 	numActions := 100000
-	st := NewStats()
-	actionsSlice := make([]string, numActions)
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		var jsonString []byte
-		jsonString, _ = json.Marshal(sample)
-		actionsSlice[i] = string(jsonString)
-	}
-	for _, v := range actionsSlice {
-		st.AddAction(v)
-	}
+	st := makeStatsWithUniqueActions(numActions)
 	actionName := "action"
 	sample := Sample{
 		Action: actionName,
@@ -292,21 +244,7 @@ func BenchmarkAddActionMega(b *testing.B) {
 
 func BenchmarkAddActionSmall(b *testing.B) {
 	numActions := 10
-	st := NewStats()
-	actionsSlice := make([]string, numActions)
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		var jsonString []byte
-		jsonString, _ = json.Marshal(sample)
-		actionsSlice[i] = string(jsonString)
-	}
-	for _, v := range actionsSlice {
-		st.AddAction(v)
-	}
+	st := makeStatsWithUniqueActions(numActions)
 	actionName := "action"
 	sample := Sample{
 		Action: actionName,
@@ -323,19 +261,7 @@ func BenchmarkAddActionSmall(b *testing.B) {
 
 func BenchmarkAddActionMega_direct(b *testing.B) {
 	numActions := 100000
-	st := NewStats()
-	actionsSlice := make([]Sample, numActions)
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		actionsSlice[i] = sample
-	}
-	for _, v := range actionsSlice {
-		st.addAction(v)
-	}
+	st := makeStatsWithUniqueActions(numActions)
 	sample := Sample{
 		Action: "actionName",
 		Time:   math.MaxUint64,
@@ -349,19 +275,7 @@ func BenchmarkAddActionMega_direct(b *testing.B) {
 
 func BenchmarkAddActionSmall_direct(b *testing.B) {
 	numActions := 10
-	st := NewStats()
-	actionsSlice := make([]Sample, numActions)
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		actionsSlice[i] = sample
-	}
-	for _, v := range actionsSlice {
-		st.addAction(v)
-	}
+	st := makeStatsWithUniqueActions(numActions)
 	sample := Sample{
 		Action: "actionName",
 		Time:   math.MaxUint64,

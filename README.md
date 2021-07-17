@@ -3,7 +3,7 @@
 The stats module has the ability to track the average  time for a given action. It works by calculating a running average of the time of each action as they are added. [Specification](https://github.com/qWeX23/JC_Assignment/blob/main/Software%20Engineer%20-%20Backend%20Assignment.pdf)
 
 ---
-Usage:
+## Usage
 
 Stats Hello World 
 ```
@@ -51,11 +51,7 @@ Open a terminal or cmd in the desired directory and run the following commands
 
 `cd JC_assignment/stats`
 
-Compile the code 
-
-`go build`
-
-Testing the code
+Testing the module
 
 `go test -v`
 
@@ -63,7 +59,17 @@ To use the module standalone
 
 `cd ../main`
 
-Open main.go in the text editor and 
+Open main.go in the text editor and add your custom code to use the module
+
+`go run .`
+
+Will run the main program.
+
+Compile the code 
+
+`go build`
+
+Will compile the main program in to main.exe
 
 ---
 ## Using the module
@@ -110,7 +116,7 @@ A mutex was chosen for this implementation to ensure thread safety. This allowed
 ---
 ## Performance
 
-The Benchmark tests can be run from the stats directory using the command: 
+The Benchmark tests can be run from the stats directory using the command: (note on Windows this only ran successfully in powershell and not CMD)
 
 `go test -bench=$.`
 
