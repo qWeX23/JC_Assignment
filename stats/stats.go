@@ -41,19 +41,22 @@ func NewStats() Stats {
 
 //returns all of the averages as a json array
 func (s *Stats) GetStats() (string, error) {
+	//get the slice from the stats struct
 	sliceAvg, err := s.getSampleAverageSlice()
 	if err != nil {
 		return "", err
 	}
+	//Marshal into json and return
 	jsonString, err := json.Marshal(sliceAvg)
 	return string(jsonString), err
 }
 
 //traverses the stats map, calulates the averages and returns them as an array
 func (s *Stats) getSampleAverageSlice() (AveragesSlice []SampleAverage, errorReturn error) {
+	//catch any panics
 	defer func() {
 		if r := recover(); r != nil {
-			errorReturn = errors.New("unknown error while getting stats")
+			errorReturn = errors.New("error while getting stats")
 		}
 	}()
 	//make the slice to return
