@@ -41,7 +41,7 @@ will output similar to
  
 You should have the following installed 
  
-[go](https://golang.org/dl/) Developed and tested on `go version go1.16.5 windows/amd64` but there is not reason to believe at time of writing that go 1.16.X for any OS would be incompatible, However, they are not tested. 
+[go](https://golang.org/dl/) Developed and tested on `go version go1.16.5 windows/amd64` but there is not reason to believe at time of writing that go 1.16.X for any OS would be incompatible, However, they are not tested. go.exe will need to be updated into the path.
  
 [git](https://git-scm.com/downloads) 
  
