@@ -9,7 +9,6 @@ jobs:
       - checkout
       - run:
           name: Change Dir
-          command: cd stats 
-       - run:
-          name: Run tests
-          command: go test -v
+          command: |
+            cd stats
+            go test -v
