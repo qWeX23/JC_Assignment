@@ -1,4 +1,6 @@
 # JumpCloud Software Engineer Programming Assignment
+
+[![qWeX23](https://circleci.com/gh/qWeX23/JC_Assignment.svg?style=svg)](https://app.circleci.com/pipelines/github/qWeX23/JC_Assignment)
  
 The stats module has the ability to track the average  time for a given action. It works by calculating a running average of the time of each action as they are added. [Specification](https://github.com/qWeX23/JC_Assignment/blob/main/Software%20Engineer%20-%20Backend%20Assignment.pdf)
  
