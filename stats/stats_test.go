@@ -149,6 +149,7 @@ func TestAddAction_BadJson(t *testing.T) {
 	}
 }
 
+//verify we get an error when the numbers get too big
 func TestAddAction_IntOverflow(t *testing.T) {
 	st := NewStats()
 
@@ -171,26 +172,42 @@ func TestAddAction_IntOverflow(t *testing.T) {
 	}
 }
 
+//=====================Benchmark Tests====================//
+
+//helper to make new stats with numActions number of unique actions
+//used by most tests to show complexity increase for unique actions
+func makeStatsWithUniqueActions(numActions int) (st Stats) {
+	st = NewStats()
+	for i := 0; i < numActions; i++ {
+		actionName := fmt.Sprintf("Action%d", i)
+		sample := Sample{
+			Action: actionName,
+			Time:   math.MaxUint64,
+		}
+		st.addAction(sample)
+	}
+	return st
+}
+
+//helper to make stats with numActions entries into a single action
+//used by XX_highvolume and XX_lowvolume tests to show complexity in terms of unique actions
+func makeStatsOneAction(numActions int) (st Stats) {
+	st = NewStats()
+	actionName := "action"
+	for i := 0; i < numActions; i++ {
+		sample := Sample{
+			Action: actionName,
+			Time:   uint64(i),
+		}
+		st.addAction(sample)
+	}
+	return st
+}
+
+//get benchmarks from get stats with only 10 unique actions
 func BenchmarkGetStatsSmall(b *testing.B) {
-
-	var tests = []string{
-		"jump",
-		"run",
-		"walk",
-		"swim",
-		"sprint",
-		"kick",
-	}
-
-	st := NewStats()
-
-	for _, t := range tests {
-		sample := Sample{
-			Action: t,
-			Time:   math.MaxUint64,
-		}
-		st.addAction(sample)
-	}
+	numActions := 10
+	st := makeStatsWithUniqueActions(numActions)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.GetStats()
@@ -198,43 +215,19 @@ func BenchmarkGetStatsSmall(b *testing.B) {
 
 }
 
+//benchmark get stats with 1,000,000 unique actions
 func BenchmarkGetStatsMega(b *testing.B) {
-	numActions := 100000
-	st := NewStats()
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		st.addAction(sample)
-	}
+	numActions := 1000000
+	st := makeStatsWithUniqueActions(numActions)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.GetStats()
 	}
 }
 
+//benchmark get stats with 10 unique records to underlying call, not JSON
 func BenchmarkGetStatsSmall_direct(b *testing.B) {
-
-	var tests = []string{
-		"jump",
-		"run",
-		"walk",
-		"swim",
-		"sprint",
-		"kick",
-	}
-
-	st := NewStats()
-
-	for _, t := range tests {
-		sample := Sample{
-			Action: t,
-			Time:   math.MaxUint64,
-		}
-		st.addAction(sample)
-	}
+	st := makeStatsWithUniqueActions(10)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.getSampleAverageSlice()
@@ -242,40 +235,20 @@ func BenchmarkGetStatsSmall_direct(b *testing.B) {
 
 }
 
+//benchmark get stats with 1,000,000 unique records to underlying call, not JSON
 func BenchmarkGetStatsMega_direct(b *testing.B) {
-	numActions := 100000
-	st := NewStats()
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		st.addAction(sample)
-	}
+	numActions := 1000000
+	st := makeStatsWithUniqueActions(numActions)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.getSampleAverageSlice()
 	}
 }
 
+//benchmark add action with 1,000,000 unique actions
 func BenchmarkAddActionMega(b *testing.B) {
-	numActions := 100000
-	st := NewStats()
-	actionsSlice := make([]string, numActions)
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		var jsonString []byte
-		jsonString, _ = json.Marshal(sample)
-		actionsSlice[i] = string(jsonString)
-	}
-	for _, v := range actionsSlice {
-		st.AddAction(v)
-	}
+	numActions := 1000000
+	st := makeStatsWithUniqueActions(numActions)
 	actionName := "action"
 	sample := Sample{
 		Action: actionName,
@@ -290,23 +263,10 @@ func BenchmarkAddActionMega(b *testing.B) {
 	}
 }
 
+//benchmark add action with 10 unique actions
 func BenchmarkAddActionSmall(b *testing.B) {
 	numActions := 10
-	st := NewStats()
-	actionsSlice := make([]string, numActions)
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		var jsonString []byte
-		jsonString, _ = json.Marshal(sample)
-		actionsSlice[i] = string(jsonString)
-	}
-	for _, v := range actionsSlice {
-		st.AddAction(v)
-	}
+	st := makeStatsWithUniqueActions(numActions)
 	actionName := "action"
 	sample := Sample{
 		Action: actionName,
@@ -321,47 +281,24 @@ func BenchmarkAddActionSmall(b *testing.B) {
 	}
 }
 
+// benchmark add action underlying call with 1,000,000 unique actions
 func BenchmarkAddActionMega_direct(b *testing.B) {
-	numActions := 100000
-	st := NewStats()
-	actionsSlice := make([]Sample, numActions)
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		actionsSlice[i] = sample
-	}
-	for _, v := range actionsSlice {
-		st.addAction(v)
-	}
+	numActions := 1000000
+	st := makeStatsWithUniqueActions(numActions)
 	sample := Sample{
 		Action: "actionName",
 		Time:   math.MaxUint64,
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-
 		st.addAction(sample)
 	}
 }
 
+//benchmark add action underlying call with 10 unique actions
 func BenchmarkAddActionSmall_direct(b *testing.B) {
 	numActions := 10
-	st := NewStats()
-	actionsSlice := make([]Sample, numActions)
-	for i := 0; i < numActions; i++ {
-		actionName := fmt.Sprintf("Action%d", i)
-		sample := Sample{
-			Action: actionName,
-			Time:   math.MaxUint64,
-		}
-		actionsSlice[i] = sample
-	}
-	for _, v := range actionsSlice {
-		st.addAction(v)
-	}
+	st := makeStatsWithUniqueActions(numActions)
 	sample := Sample{
 		Action: "actionName",
 		Time:   math.MaxUint64,
@@ -373,56 +310,34 @@ func BenchmarkAddActionSmall_direct(b *testing.B) {
 	}
 }
 
+// The following tests demonstrate the constant complexity of operations on a sigle action
+
+//benchmark underlying getstats call with one unique action updated 1,000,000 times
 func BenchmarkGetStats_direct_highvolume(b *testing.B) {
-	numActions := 100000
-	st := NewStats()
-	actionName := "action"
-	for i := 0; i < numActions; i++ {
-		sample := Sample{
-			Action: actionName,
-			Time:   uint64(i),
-		}
-		st.addAction(sample)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		st.getSampleAverageSlice()
-	}
-}
-func BenchmarkGetStats_direct_lowvolume(b *testing.B) {
-	numActions := 10
-	st := NewStats()
-	actionName := "action"
-	for i := 0; i < numActions; i++ {
-		sample := Sample{
-			Action: actionName,
-			Time:   uint64(i),
-		}
-		st.addAction(sample)
-	}
+	numActions := 1000000
+	st := makeStatsOneAction(numActions)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		st.getSampleAverageSlice()
 	}
 }
 
-func BenchmarkAddActionMega_direct_highvolume(b *testing.B) {
-	numActions := 100000
-	st := NewStats()
-	actionsSlice := make([]Sample, numActions)
-	actionName := "action"
-	for i := 0; i < numActions; i++ {
-		sample := Sample{
-			Action: actionName,
-			Time:   uint64(i),
-		}
-		actionsSlice[i] = sample
+//benchmark underlying getstats call with one unique action updated 10 times
+func BenchmarkGetStats_direct_lowvolume(b *testing.B) {
+	numActions := 10
+	st := makeStatsOneAction(numActions)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		st.getSampleAverageSlice()
 	}
-	for _, v := range actionsSlice {
-		st.addAction(v)
-	}
+}
+
+//benchmark underlying addAction call with one unique action updated 1,000,000 times
+func BenchmarkAddAction_direct_highvolume(b *testing.B) {
+	numActions := 1000000
+	st := makeStatsOneAction(numActions)
 	sample := Sample{
-		Action: actionName,
+		Action: "action",
 		Time:   uint64(1),
 	}
 	b.ResetTimer()
@@ -431,23 +346,12 @@ func BenchmarkAddActionMega_direct_highvolume(b *testing.B) {
 	}
 }
 
-func BenchmarkAddActionMega_direct_lowvolume(b *testing.B) {
+//benchmark underlying addAction call with one unique action updated 10 times
+func BenchmarkAddAction_direct_lowvolume(b *testing.B) {
 	numActions := 10
-	st := NewStats()
-	actionsSlice := make([]Sample, numActions)
-	actionName := "action"
-	for i := 0; i < numActions; i++ {
-		sample := Sample{
-			Action: actionName,
-			Time:   uint64(i),
-		}
-		actionsSlice[i] = sample
-	}
-	for _, v := range actionsSlice {
-		st.addAction(v)
-	}
+	st := makeStatsOneAction(numActions)
 	sample := Sample{
-		Action: actionName,
+		Action: "action",
 		Time:   uint64(1),
 	}
 	b.ResetTimer()

@@ -22,27 +22,4 @@ func main() {
 	}
 	print(statsJson)
 
-	// for i := 0; i < 100000; i++ {
-	// 	a := stats.Sample{
-	// 		Action: "jump",
-	// 		Time:   uint64(rand.Intn(10000000)),
-	// 	}
-
-	// 	b, _ := json.Marshal(a)
-
-	// 	go st.AddAction(string(b))
-	// 	go st.AddAction(string(b))
-
-	// 	go st.AddAction(string(b))
-
-	// 	go st.AddAction(string(b))
-
-	// 	go st.AddAction(string(b))
-
-	// 	if i%2 == 0 {
-	// 		//go println(st.GetStats())
-	// 	}
-
-	// }
-
 }
